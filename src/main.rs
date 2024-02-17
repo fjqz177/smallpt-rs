@@ -6,7 +6,7 @@ use std::io::{BufWriter, Write};
 use std::sync::Arc;
 use std::env;
 
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 
 const PI: f64 = 3.14159265358979323846;
 
@@ -209,8 +209,6 @@ fn radiance(ray: &Ray, depth: i32, rng: &mut ThreadRng, spheres: &[Sphere]) -> V
 fn main() {
     let args: std::vec::Vec<String> = env::args().collect();
 
-    
-
     let width = 1024;
     let height = 768;
     let samples = if args.len() > 1 {
@@ -221,6 +219,10 @@ fn main() {
     }; // Increase for better quality
 
     let pb = ProgressBar::new(samples as u64 * width as u64 * height as u64 * 4);
+    pb.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {percent}% ETA:{eta}")
+        .unwrap()
+        .with_key("eta", |state: &ProgressState, w: &mut dyn std::fmt::Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
+        .progress_chars("##"));
 
     let cam = Ray::new(Vec::new(50.0, 52.0, 295.6), Vec::new(0.0, -0.042612, -1.0).norm());
     let cx = Vec::new(width as f64 * 0.5135 / height as f64, 0.0, 0.0);
